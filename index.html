@@ -1,326 +1,436 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Chamada GAP-BE">
-  <meta name="theme-color" content="#1A365D">
-  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1hLHrX8zWkOv6Z6NRPUGHi2Q1MMisdvcs">
-  
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const manifest = {
-        "name": "Chamada Digital GAP-BE",
-        "short_name": "Chamada",
-        "start_url": window.location.href, 
-        "display": "standalone", 
-        "background_color": "#f4f6f9",
-        "theme_color": "#1A365D",
-        "icons": [{
-          "src": "https://lh3.googleusercontent.com/d/1hLHrX8zWkOv6Z6NRPUGHi2Q1MMisdvcs",
-          "sizes": "512x512",
-          "type": "image/png"
-        }]
-      };
-      const stringManifest = JSON.stringify(manifest);
-      const blob = new Blob([stringManifest], {type: 'application/json'});
-      const manifestURL = URL.createObjectURL(blob);
-      document.querySelector('head').insertAdjacentHTML('beforeend', '<link rel="manifest" href="' + manifestURL + '">');
-    });
-  </script>
-  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  
-  <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding-bottom: 30px;}
-    .app-header { background-color: #1A365D; color: white; padding: 15px; border-bottom: 4px solid #2B6CB0; }
-    .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    .situacao-select { font-weight: bold; }
-    #tela-chamada, #tela-sucesso { display: none; }
-    .spinner-border-btn { display: none; }
-    #lista-sugestoes { display: none; z-index: 1050; max-height: 220px; overflow-y: auto; border-radius: 0 0 8px 8px; }
-    .sugestao-item { cursor: pointer; }
-    .sugestao-item:hover { background-color: #f8f9fa; }
-    .caixa-secoes { border: 1px solid #3b82f6; border-radius: 8px; padding: 15px; background-color: #ffffff; max-height: 180px; overflow-y: auto; }
-    .divisor-secao { background-color: #e2e8f0; padding: 5px 10px; font-weight: bold; font-size: 0.85rem; border-radius: 5px; margin-top: 15px; margin-bottom: 10px; color: #1e293b; }
-    .sucesso-icon { font-size: 5rem; color: #198754; animation: scale-up 0.5s ease-out; }
-    @keyframes scale-up { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-    @media print { .no-print { display: none !important; } body { background-color: white !important; } #recibo-print { display: block !important; width: 100%; padding: 10px; background-color: white; } }
-  </style>
-</head>
-<body>
+    <head>
+    <base target="_top">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+      body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding-bottom: 30px;}
+      .app-header { background-color: #1A365D; color: white; padding: 15px; border-bottom: 4px solid #2B6CB0; }
+      .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
+      .situacao-select { font-weight: bold; }
+      #tela-chamada, #tela-sucesso { display: none; }
+      .spinner-border-btn { display: none; }
+      
+      #lista-sugestoes {
+        display: none; 
+        z-index: 1050; 
+        max-height: 220px; 
+        overflow-y: auto;
+        border-radius: 0 0 8px 8px;
+      }
+      .sugestao-item { cursor: pointer; }
+      .sugestao-item:hover { background-color: #f8f9fa; }
+      
+      .caixa-secoes {
+        border: 1px solid #3b82f6; 
+        border-radius: 8px; 
+        padding: 15px; 
+        background-color: #ffffff;
+        max-height: 180px;
+        overflow-y: auto;
+      }
+      .divisor-secao {
+        background-color: #e2e8f0;
+        padding: 5px 10px;
+        font-weight: bold;
+        font-size: 0.85rem;
+        border-radius: 5px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        color: #1e293b;
+      }
+      
+      .sucesso-icon {
+        font-size: 5rem;
+        color: #198754;
+        animation: scale-up 0.5s ease-out;
+      }
+      @keyframes scale-up {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
 
-  <div class="app-header no-print">
-    <div class="d-flex justify-content-between align-items-center px-2">
-      <h5 class="mb-0 fw-bold text-center flex-grow-1"><i class="bi bi-phone-vibrate"></i> Chamada Digital Mobile</h5>
-    </div>
-  </div>
+      @media print {
+        .no-print { display: none !important; } 
+        body { background-color: white !important; }
+        
+        #recibo-print { 
+          display: block !important; 
+          width: 100%; 
+          padding: 10px; 
+          background-color: white; 
+        }
+      }
+    </style>
 
-  <div class="container mt-4 no-print">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <div id="tela-login" class="card p-4">
-      <h5 class="mb-4 text-center text-primary fw-bold">Início de Chamada</h5>
-      <div id="load-login" class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm" role="status"></div><span class="ms-2">A preparar sistema...</span></div>
-      <div id="form-login" style="display: none;">
-        <div class="mb-3 position-relative">
-          <label class="fw-bold text-secondary"><i class="bi bi-person-badge"></i> 1. Quem está a realizar a chamada?</label>
-          <input type="text" id="responsavel" class="form-control form-control-lg border-primary" placeholder="Digite seu nome de guerra..." autocomplete="off" onkeyup="filtrarNomes()" onclick="filtrarNomes()">
-          <ul class="list-group position-absolute w-100 shadow" id="lista-sugestoes"></ul>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chamada GAP-BE">
+    
+    <meta name="theme-color" content="#1A365D">
+    
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1hLHrX8zWkOv6Z6NRPUGHi2Q1MMisdvcs">
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const manifest = {
+          "name": "Chamada Digital GAP-BE",
+          "short_name": "Chamada",
+          "start_url": window.location.href, 
+          "display": "standalone", 
+          "background_color": "#f4f6f9",
+          "theme_color": "#1A365D",
+          "icons": [{
+            "src": "https://lh3.googleusercontent.com/d/1hLHrX8zWkOv6Z6NRPUGHi2Q1MMisdvcs",
+            "sizes": "512x512",
+            "type": "image/png"
+          }]
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.querySelector('head').insertAdjacentHTML('beforeend', '<link rel="manifest" href="' + manifestURL + '">');
+      });
+    </script>
+    </head>
+  <body>
+
+    <div class="app-header no-print">
+      <div class="d-flex justify-content-between align-items-center px-2">
+        <h5 class="mb-0 fw-bold text-center flex-grow-1"><i class="bi bi-phone-vibrate"></i> Chamada Digital Mobile</h5>
+      </div>
+    </div>
+
+    <div class="container mt-4 no-print">
+      
+      <div id="tela-login" class="card p-4">
+        <h5 class="mb-4 text-center text-primary fw-bold">Início de Chamada</h5>
+        
+        <div id="load-login" class="text-center py-3">
+           <div class="spinner-border text-primary spinner-border-sm" role="status"></div><span class="ms-2">A preparar sistema...</span>
         </div>
-        <div class="mb-4">
-          <label class="fw-bold text-secondary mb-2"><i class="bi bi-diagram-3"></i> 2. Selecione as Frações para a Chamada:</label>
-          <div id="container-secoes" class="caixa-secoes"><span class="text-muted small">Identifique-se primeiro para carregar os setores inerentes...</span></div>
-          <small class="text-muted d-block mt-1">O seu setor principal será marcado automaticamente.</small>
+
+        <div id="form-login" style="display: none;">
+          <div class="mb-3 position-relative">
+            <label class="fw-bold text-secondary"><i class="bi bi-person-badge"></i> 1. Quem está a realizar a chamada?</label>
+            <input type="text" id="responsavel" class="form-control form-control-lg border-primary" 
+                   placeholder="Digite seu nome de guerra..." autocomplete="off" 
+                   onkeyup="filtrarNomes()" onclick="filtrarNomes()">
+            <ul class="list-group position-absolute w-100 shadow" id="lista-sugestoes"></ul>
+          </div>
+
+          <div class="mb-4">
+            <label class="fw-bold text-secondary mb-2"><i class="bi bi-diagram-3"></i> 2. Selecione as Frações para a Chamada:</label>
+            <div id="container-secoes" class="caixa-secoes">
+              <span class="text-muted small">Identifique-se primeiro para carregar os setores inerentes...</span>
+            </div>
+            <small class="text-muted d-block mt-1">O seu setor principal será marcado automaticamente.</small>
+          </div>
+
+          <button id="btn-iniciar" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" onclick="iniciarChamada()" disabled>
+            AVANÇAR PARA CHAMADA <span class="spinner-border spinner-border-sm spinner-border-btn" id="load-iniciar"></span>
+          </button>
         </div>
-        <button id="btn-iniciar" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" onclick="iniciarChamada()" disabled>
-          AVANÇAR PARA CHAMADA <span class="spinner-border spinner-border-sm spinner-border-btn" id="load-iniciar"></span>
+      </div>
+
+      <div id="tela-chamada">
+        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+          <h5 id="titulo-secao" class="mb-0 text-primary fw-bold" style="font-size: 1.1rem; line-height: 1.3;"></h5>
+          <button class="btn btn-sm btn-outline-secondary ms-2 text-nowrap" onclick="voltarParaLogin()">Voltar</button>
+        </div>
+        
+        <form id="form-chamada">
+          <div id="lista-militares">
+            <div class="text-center mt-4" id="load-militares">
+               <div class="spinner-border text-primary" role="status"></div>
+               <p class="mt-2">Unificando efetivo das frações...</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-success w-100 py-3 mt-3 mb-5 fw-bold fs-5 shadow" id="btn-enviar" onclick="enviarChamada()">
+            <i class="bi bi-send-check"></i> ENVIAR CHAMADA
+          </button>
+        </form>
+      </div>
+
+      <div id="tela-sucesso" class="card p-5 text-center mt-4 border-success">
+        <i class="bi bi-check-circle-fill sucesso-icon"></i>
+        <h3 class="fw-bold mt-4 text-success">Registrada com Sucesso!</h3>
+        <p class="text-secondary mt-2 fs-5">A chamada já se encontra oficialmente no banco de dados.</p>
+        
+        <button class="btn btn-primary mt-4 fw-bold py-3 w-100 shadow-sm" onclick="window.print()">
+          <i class="bi bi-file-earmark-pdf"></i> GERAR COMPROVANTE (PDF)
+        </button>
+        
+        <button class="btn btn-outline-secondary mt-3 fw-bold py-2 w-100" onclick="resetarSistema()">
+          <i class="bi bi-arrow-repeat"></i> FAZER NOVA CHAMADA
         </button>
       </div>
+
     </div>
 
-    <div id="tela-chamada">
-      <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-        <h5 id="titulo-secao" class="mb-0 text-primary fw-bold" style="font-size: 1.1rem; line-height: 1.3;"></h5>
-        <button class="btn btn-sm btn-outline-secondary ms-2 text-nowrap" onclick="voltarParaLogin()">Voltar</button>
-      </div>
-      <form id="form-chamada">
-        <div id="lista-militares">
-          <div class="text-center mt-4" id="load-militares"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Unificando efetivo das frações...</p></div>
-        </div>
-        <button type="button" class="btn btn-success w-100 py-3 mt-3 mb-5 fw-bold fs-5 shadow" id="btn-enviar" onclick="enviarChamada()"><i class="bi bi-send-check"></i> ENVIAR CHAMADA</button>
-      </form>
-    </div>
+    <div id="recibo-print" style="display: none;"></div>
 
-    <div id="tela-sucesso" class="card p-5 text-center mt-4 border-success">
-      <i class="bi bi-check-circle-fill sucesso-icon"></i>
-      <h3 class="fw-bold mt-4 text-success">Registrada com Sucesso!</h3>
-      <p class="text-secondary mt-2 fs-5">A chamada já se encontra oficialmente no banco de dados.</p>
-      <button class="btn btn-primary mt-4 fw-bold py-3 w-100 shadow-sm" onclick="window.print()"><i class="bi bi-file-earmark-pdf"></i> GERAR COMPROVANTE (PDF)</button>
-      <button class="btn btn-outline-secondary mt-3 fw-bold py-2 w-100" onclick="resetarSistema()"><i class="bi bi-arrow-repeat"></i> FAZER NOVA CHAMADA</button>
-    </div>
-
-  </div>
-
-  <div id="recibo-print" style="display: none;"></div>
-
-  <div class="modal fade no-print" id="modalAviso" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white" id="modalHeader">
-          <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon"></i> Erro no Sistema</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body text-center fs-5 py-4" id="modalMsg"></div>
-        <div class="modal-footer justify-content-center"><button type="button" class="btn btn-secondary w-50" data-bs-dismiss="modal">OK</button></div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ==============================================================
-    // ⚠️ ATENÇÃO: COLE A URL QUE VOCÊ COPIOU NA FASE 1 AQUI:
-    // ==============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbwYVk-Rf9bYHMysrK2oG4dGFo9AWOMnh8f4vMhh_RJ7kZgRlrCCmUf60STcCBDYll3n/exec";
-    
-    let dadosMilitares = [];
-    let todasSecoes = [];
-    let secoesSelecionadasNome = "";
-
-    async function chamarBackend(acao, parametros = {}) {
-      try {
-        const resposta = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: acao, ...parametros })
-        });
-        const resultado = await resposta.json();
-        if (resultado.status === "success") return resultado.data;
-        else throw new Error(resultado.message);
-      } catch (erro) { throw erro; }
-    }
-
-    function mostrarAvisoErro(msg) {
-      document.getElementById('modalMsg').innerHTML = msg;
-      new bootstrap.Modal(document.getElementById('modalAviso')).show();
-    }
-
-    window.onload = function() {
-      chamarBackend('obterDadosParaChamada')
-        .then(preencherDadosIniciais)
-        .catch(e => mostrarAvisoErro("Erro de conexão: " + e.message));
-    };
-
-    function preencherDadosIniciais(dados) {
-      dadosMilitares = dados.militares;
-      todasSecoes = dados.secoes;
-      document.getElementById('load-login').style.display = 'none';
-      document.getElementById('form-login').style.display = 'block';
-    }
-
-    function filtrarNomes() {
-      let inputEl = document.getElementById('responsavel');
-      inputEl.value = inputEl.value.toUpperCase();
-      let inputTexto = inputEl.value;
-      let listaSugestoes = document.getElementById('lista-sugestoes');
-      listaSugestoes.innerHTML = '';
-      
-      if (inputTexto.length < 2) {
-        listaSugestoes.style.display = 'none';
-        document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Identifique-se primeiro...</span>';
-        liberarBotao();
-        return;
-      }
-      let filtrados = dadosMilitares.filter(m => m.postoNome.toUpperCase().includes(inputTexto));
-      if (filtrados.length > 0) {
-        listaSugestoes.style.display = 'block';
-        filtrados.forEach(m => {
-          let li = document.createElement('li');
-          li.className = 'list-group-item sugestao-item border-primary border-top-0 border-end-0 border-bottom-1 border-start-0';
-          li.innerHTML = `<b>${m.postoNome}</b> <span class="badge bg-secondary float-end">${m.secao}</span>`;
-          li.onclick = function() {
-            document.getElementById('responsavel').value = m.postoNome;
-            listaSugestoes.style.display = 'none';
-            let basePrefix = m.secao.split('-')[0].trim();
-            let setoresPermitidos = todasSecoes.filter(s => s.startsWith(basePrefix));
-            renderizarCheckboxesSecoes(setoresPermitidos, m.secao);
-            liberarBotao();
-          };
-          listaSugestoes.appendChild(li);
-        });
-      } else {
-        listaSugestoes.style.display = 'none';
-        document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Não encontrado.</span>';
-      }
-      liberarBotao();
-    }
-
-    function renderizarCheckboxesSecoes(listaSetores, setorExatoDoMilitar) {
-      let container = document.getElementById('container-secoes');
-      container.innerHTML = '';
-      if(listaSetores.length === 0) { container.innerHTML = '<span class="text-danger small">Nenhum setor encontrado.</span>'; return; }
-      listaSetores.forEach(s => {
-         let checked = (s === setorExatoDoMilitar) ? 'checked' : '';
-         container.innerHTML += `<div class="form-check form-switch mb-2"><input class="form-check-input chk-secao" type="checkbox" value="${s}" id="chk_${s}" ${checked} onchange="liberarBotao()"><label class="form-check-label fw-bold text-dark" for="chk_${s}">${s}</label></div>`;
-      });
-    }
-
-    document.addEventListener('click', function(e) { if (e.target.id !== 'responsavel') document.getElementById('lista-sugestoes').style.display = 'none'; });
-
-    function liberarBotao() {
-      let resp = document.getElementById('responsavel').value;
-      let checks = document.querySelectorAll('.chk-secao:checked');
-      document.getElementById('btn-iniciar').disabled = (resp.trim() === "" || checks.length === 0);
-    }
-
-    function iniciarChamada() {
-      let checks = document.querySelectorAll('.chk-secao:checked');
-      let arraySecoes = Array.from(checks).map(cb => cb.value);
-      secoesSelecionadasNome = arraySecoes.join(', ');
-      document.getElementById('load-iniciar').style.display = 'inline-block';
-      chamarBackend('obterMilitaresPorSecao', { secoes: arraySecoes }).then(montarLista).catch(e => { mostrarAvisoErro("Erro: " + e.message); document.getElementById('load-iniciar').style.display = 'none'; });
-    }
-
-    function montarLista(militares) {
-      document.getElementById('tela-login').style.display = 'none';
-      document.getElementById('tela-chamada').style.display = 'block';
-      document.getElementById('titulo-secao').innerText = secoesSelecionadasNome;
-      document.getElementById('load-iniciar').style.display = 'none';
-      let divLista = document.getElementById('lista-militares');
-      divLista.innerHTML = '';
-      if(militares.length === 0) { divLista.innerHTML = '<div class="alert alert-warning">Vazio.</div>'; return; }
-      let secaoAtual = "";
-      militares.forEach((mil, index) => {
-        if (mil.secaoFiltro !== secaoAtual) { secaoAtual = mil.secaoFiltro; divLista.innerHTML += `<div class="divisor-secao"><i class="bi bi-diagram-2"></i> ${secaoAtual}</div>`; }
-        let sitVal = mil.situacao || 'P'; let justVal = mil.justificativa || ''; let dtVal = '';
-        if (justVal.includes('Retorno Previsto:')) {
-           let parts = justVal.split('Retorno Previsto:');
-           let customJust = parts[0].trim();
-           if (customJust.endsWith('|')) customJust = customJust.slice(0, -1).trim();
-           justVal = customJust; 
-           let dataStr = parts[1].trim(); let pts = dataStr.split('/');
-           if (pts.length === 3) dtVal = `${pts[2]}-${pts[1]}-${pts[0]}`; 
-        }
-        let selP = sitVal === 'P' ? 'selected' : ''; let selF = sitVal === 'F' ? 'selected' : ''; let selINST = sitVal === 'INST' ? 'selected' : ''; let selCOM = sitVal === 'COM' ? 'selected' : ''; let selFER = sitVal === 'FÉR' ? 'selected' : ''; let selLIC = sitVal === 'LIC' ? 'selected' : ''; let selSV = sitVal === 'SV' ? 'selected' : ''; let selSSV = sitVal === 'SSV' ? 'selected' : ''; let selFORM = sitVal === 'FORM' ? 'selected' : ''; let selDM = sitVal === 'DM' ? 'selected' : ''; let selD = sitVal === 'D' ? 'selected' : '';
-        divLista.innerHTML += `
-          <div class="card p-3 border-start border-4 border-primary shadow-sm">
-            <div class="mb-2"><h6 class="mb-0 text-dark fw-bold">${mil.postoGrad} ${mil.nomeGuerra}</h6></div>
-            <div class="row gx-2 align-items-center">
-              <div class="col-12" id="sitCol_${index}">
-                <select class="form-select form-select-sm situacao-select" id="sit_${index}">
-                  <option value="P" ${selP}>🟢 P (Presença)</option>
-                  <option value="F" ${selF}>🔴 F (Falta)</option>
-                  <option value="INST" ${selINST}>🎓 INST (Instrução)</option>
-                  <option value="COM" ${selCOM}>✈️ COM (Comissão)</option>
-                  <option value="FÉR" ${selFER}>🟡 FÉR (Férias)</option>
-                  <option value="LIC" ${selLIC}>🟤 LIC (Licença)</option>
-                  <option value="SV" ${selSV}>🔵 SV (Serviço)</option>
-                  <option value="SSV" ${selSSV}>🔵 SSV (Saindo Serv)</option>
-                  <option value="FORM" ${selFORM}>🟠 FORM (Formatura)</option>
-                  <option value="DM" ${selDM}>🟣 DM (Disp. Médica)</option>
-                  <option value="D" ${selD}>⚪ D (Dispensado)</option>
-                </select>
-              </div>
-              <div class="col-12 mt-2" id="justCol_${index}" style="display: none;"><input type="text" class="form-control form-control-sm border-danger" id="just_${index}" placeholder="Justificativa (Opcional)" value="${justVal}" oninput="this.value = this.value.toUpperCase()"></div>
-              <div class="col-12 mt-2" id="retornoCol_${index}" style="display: none;"><label class="form-label mb-0" style="font-size: 0.70rem; font-weight: bold; color: #d97706;">Retorno Previsto:</label><input type="date" class="form-control form-control-sm border-warning" id="retorno_${index}" value="${dtVal}"></div>
-            </div>
-            <input type="hidden" id="pg_${index}" value="${mil.postoGrad}">
-            <input type="hidden" id="ng_${index}" value="${mil.nomeGuerra}">
+    <div class="modal fade no-print" id="modalAviso" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white" id="modalHeader">
+            <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon"></i> Erro no Sistema</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
-        `;
-      });
-      document.querySelectorAll('.situacao-select').forEach(el => {
-         el.addEventListener('change', function() {
-            let val = this.value; let idx = this.id.split('_')[1];
-            if(val === 'P') { this.style.backgroundColor = '#e8f5e9'; } else if(['F', 'INST', 'COM'].includes(val)) { this.style.backgroundColor = '#ffebee'; } else { this.style.backgroundColor = '#fff3e0'; }
-            let sitCol = document.getElementById('sitCol_' + idx); let justCol = document.getElementById('justCol_' + idx); let retornoCol = document.getElementById('retornoCol_' + idx);
-            sitCol.className = 'col-12'; justCol.style.display = 'none'; retornoCol.style.display = 'none';
-            if(['F', 'INST', 'COM'].includes(val)) { sitCol.className = 'col-12 col-md-5'; justCol.className = 'col-12 col-md-7 mt-2 mt-md-0'; justCol.style.display = 'block'; } else if (['FÉR', 'DM', 'D', 'LIC'].includes(val)) { sitCol.className = 'col-12 col-md-4'; justCol.className = 'col-6 col-md-4 mt-2 mt-md-0'; retornoCol.className = 'col-6 col-md-4 mt-2 mt-md-0'; justCol.style.display = 'block'; retornoCol.style.display = 'block'; }
-         });
-         el.dispatchEvent(new Event('change'));
-      });
-    }
+          <div class="modal-body text-center fs-5 py-4" id="modalMsg"></div>
+          <div class="modal-footer justify-content-center"><button type="button" class="btn btn-secondary w-50" data-bs-dismiss="modal">OK</button></div>
+        </div>
+      </div>
+    </div>
 
-    function voltarParaLogin() { document.getElementById('tela-chamada').style.display = 'none'; document.getElementById('tela-login').style.display = 'block'; }
-
-    function enviarChamada() {
-      let responsavel = document.getElementById('responsavel').value;
-      let btn = document.getElementById('btn-enviar');
-      let qtd = document.querySelectorAll('[id^="sit_"]').length;
-      let arrayChamada = [];
-      let dataHoraAtual = new Date().toLocaleString('pt-BR');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // ==============================================================
+      // ⚠️ ATENÇÃO: COLE A URL QUE VOCÊ COPIOU NA FASE 1 AQUI:
+      // ==============================================================
+      const API_URL = "https://script.google.com/macros/s/AKfycbwYVk-Rf9bYHMysrK2oG4dGFo9AWOMnh8f4vMhh_RJ7kZgRlrCCmUf60STcCBDYll3n/exec";
       
-      let htmlRecibo = `
-        <div style="text-align: center; margin-bottom: 20px;"><h4 style="font-weight: bold; margin-bottom: 0;">COMANDO DA AERONÁUTICA</h4><h5 style="margin-top: 0;">GRUPAMENTO DE APOIO DE BELÉM - GAP-BE</h5><h3 style="margin-top: 20px; text-decoration: underline;">COMPROVANTE DE CHAMADA DIGITAL</h3></div>
-        <div style="margin-bottom: 20px; font-size: 1.1rem;"><p><strong>Responsável:</strong> ${responsavel}</p><p><strong>Fração(ões):</strong> ${secoesSelecionadasNome}</p><p><strong>Data/Hora do Envio:</strong> ${dataHoraAtual}</p></div>
-        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #000; padding: 8px;">P/G e Nome de Guerra</th><th style="border: 1px solid #000; padding: 8px;">Situação</th><th style="border: 1px solid #000; padding: 8px;">Justificativa / Retorno</th></tr></thead><tbody>
-      `;
-      let totalAlteracoes = 0;
-      for(let i = 0; i < qtd; i++) {
-        let sit = document.getElementById('sit_'+i).value; let just = document.getElementById('just_'+i).value.trim(); let ret = document.getElementById('retorno_'+i).value; let pg = document.getElementById('pg_'+i).value; let ng = document.getElementById('ng_'+i).value;
-        if (['FÉR', 'DM', 'D', 'LIC'].includes(sit) && ret !== "") { let pts = ret.split('-'); let textoRetorno = "Retorno Previsto: " + pts[2] + "/" + pts[1] + "/" + pts[0]; just = just ? (just + " | " + textoRetorno) : textoRetorno; }
-        arrayChamada.push({ postoGrad: pg, nomeGuerra: ng, situacao: sit, justificativa: just, retornoPrevisto: ret });
-        if (sit !== 'P') totalAlteracoes++;
-        htmlRecibo += `<tr><td style="border: 1px solid #000; padding: 8px;">${pg} ${ng}</td><td style="border: 1px solid #000; padding: 8px; font-weight: bold;">${sit}</td><td style="border: 1px solid #000; padding: 8px;">${just || '-'}</td></tr>`;
+      let dadosMilitares = [];
+      let todasSecoes = [];
+      let secoesSelecionadasNome = "";
+
+      async function chamarBackend(acao, parametros = {}) {
+        try {
+          const resposta = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: acao, ...parametros })
+          });
+          const resultado = await resposta.json();
+          if (resultado.status === "success") return resultado.data;
+          else throw new Error(resultado.message);
+        } catch (erro) { throw erro; }
       }
-      htmlRecibo += `</tbody></table><p><strong>Total de Alterações:</strong> ${totalAlteracoes}</p><div style="margin-top: 60px; text-align: center;"><p>_______________________________________________________</p><p style="margin-top: 5px;"><strong>${responsavel}</strong><br>Responsável pela Lançamento</p></div>`;
-      document.getElementById('recibo-print').innerHTML = htmlRecibo;
-      btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ENVIANDO...';
 
-      chamarBackend('salvarChamada', { secoesString: secoesSelecionadasNome, responsavel: responsavel, arrayChamada: arrayChamada })
-      .then(resposta => {
-        document.getElementById('tela-chamada').style.display = 'none';
-        document.getElementById('tela-sucesso').style.display = 'block';
-        btn.innerHTML = '<i class="bi bi-send-check"></i> ENVIAR CHAMADA';
-        btn.disabled = false;
-      })
-      .catch(erro => { mostrarAvisoErro("Erro ao salvar: " + erro.message); btn.disabled = false; btn.innerHTML = '<i class="bi bi-send-check"></i> ENVIAR CHAMADA'; });
-    }
+      function mostrarAvisoErro(msg) {
+        document.getElementById('modalMsg').innerHTML = msg;
+        new bootstrap.Modal(document.getElementById('modalAviso')).show();
+      }
 
-    function resetarSistema() { document.getElementById('tela-sucesso').style.display = 'none'; document.getElementById('responsavel').value = ''; document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Identifique-se primeiro...</span>'; document.getElementById('btn-iniciar').disabled = true; document.getElementById('recibo-print').innerHTML = ''; document.getElementById('tela-login').style.display = 'block'; }
-  </script>
-</body>
+      window.onload = function() {
+        chamarBackend('obterDadosParaChamada')
+          .then(preencherDadosIniciais)
+          .catch(e => mostrarAvisoErro("Erro de conexão: " + e.message));
+      };
+
+      function preencherDadosIniciais(dados) {
+        dadosMilitares = dados.militares;
+        todasSecoes = dados.secoes;
+        document.getElementById('load-login').style.display = 'none';
+        document.getElementById('form-login').style.display = 'block';
+      }
+
+      function filtrarNomes() {
+        let inputEl = document.getElementById('responsavel');
+        inputEl.value = inputEl.value.toUpperCase();
+        let inputTexto = inputEl.value;
+        let listaSugestoes = document.getElementById('lista-sugestoes');
+        listaSugestoes.innerHTML = '';
+        
+        if (inputTexto.length < 2) {
+          listaSugestoes.style.display = 'none';
+          document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Identifique-se primeiro...</span>';
+          liberarBotao();
+          return;
+        }
+        let filtrados = dadosMilitares.filter(m => m.postoNome.toUpperCase().includes(inputTexto));
+        if (filtrados.length > 0) {
+          listaSugestoes.style.display = 'block';
+          filtrados.forEach(m => {
+            let li = document.createElement('li');
+            li.className = 'list-group-item sugestao-item border-primary border-top-0 border-end-0 border-bottom-1 border-start-0';
+            li.innerHTML = `<b>${m.postoNome}</b> <span class="badge bg-secondary float-end">${m.secao}</span>`;
+            li.onclick = function() {
+              document.getElementById('responsavel').value = m.postoNome;
+              listaSugestoes.style.display = 'none';
+              let basePrefix = m.secao.split('-')[0].trim();
+              let setoresPermitidos = todasSecoes.filter(s => s.startsWith(basePrefix));
+              renderizarCheckboxesSecoes(setoresPermitidos, m.secao);
+              liberarBotao();
+            };
+            listaSugestoes.appendChild(li);
+          });
+        } else {
+          listaSugestoes.style.display = 'none';
+          document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Não encontrado.</span>';
+        }
+        liberarBotao();
+      }
+
+      function renderizarCheckboxesSecoes(listaSetores, setorExatoDoMilitar) {
+        let container = document.getElementById('container-secoes');
+        container.innerHTML = '';
+        if(listaSetores.length === 0) { container.innerHTML = '<span class="text-danger small">Nenhum setor encontrado.</span>'; return; }
+        listaSetores.forEach(s => {
+           let checked = (s === setorExatoDoMilitar) ? 'checked' : '';
+           container.innerHTML += `<div class="form-check form-switch mb-2"><input class="form-check-input chk-secao" type="checkbox" value="${s}" id="chk_${s}" ${checked} onchange="liberarBotao()"><label class="form-check-label fw-bold text-dark" for="chk_${s}">${s}</label></div>`;
+        });
+      }
+
+      document.addEventListener('click', function(e) { if (e.target.id !== 'responsavel') document.getElementById('lista-sugestoes').style.display = 'none'; });
+
+      function liberarBotao() {
+        let resp = document.getElementById('responsavel').value;
+        let checks = document.querySelectorAll('.chk-secao:checked');
+        document.getElementById('btn-iniciar').disabled = (resp.trim() === "" || checks.length === 0);
+      }
+
+      function iniciarChamada() {
+        let checks = document.querySelectorAll('.chk-secao:checked');
+        let arraySecoes = Array.from(checks).map(cb => cb.value);
+        secoesSelecionadasNome = arraySecoes.join(', ');
+        document.getElementById('load-iniciar').style.display = 'inline-block';
+        chamarBackend('obterMilitaresPorSecao', { secoes: arraySecoes }).then(montarLista).catch(e => { mostrarAvisoErro("Erro: " + e.message); document.getElementById('load-iniciar').style.display = 'none'; });
+      }
+
+      function montarLista(militares) {
+        document.getElementById('tela-login').style.display = 'none';
+        document.getElementById('tela-chamada').style.display = 'block';
+        document.getElementById('titulo-secao').innerText = secoesSelecionadasNome;
+        document.getElementById('load-iniciar').style.display = 'none';
+        let divLista = document.getElementById('lista-militares');
+        divLista.innerHTML = '';
+        if(militares.length === 0) { divLista.innerHTML = '<div class="alert alert-warning">Vazio.</div>'; return; }
+        let secaoAtual = "";
+        militares.forEach((mil, index) => {
+          if (mil.secaoFiltro !== secaoAtual) { secaoAtual = mil.secaoFiltro; divLista.innerHTML += `<div class="divisor-secao"><i class="bi bi-diagram-2"></i> ${secaoAtual}</div>`; }
+          
+          let sitVal = mil.situacao || 'P'; 
+          let justVal = mil.justificativa || ''; 
+          let dtVal = '';
+          
+          if (justVal.includes('Retorno Previsto:')) {
+             let parts = justVal.split('Retorno Previsto:');
+             let customJust = parts[0].trim();
+             if (customJust.endsWith('|')) customJust = customJust.slice(0, -1).trim();
+             justVal = customJust; 
+             let dataStr = parts[1].trim(); let pts = dataStr.split('/');
+             if (pts.length === 3) dtVal = `${pts[2]}-${pts[1]}-${pts[0]}`; 
+          }
+
+          // LÓGICA DE SEGURANÇA: Se o status que vem do servidor for P ou Vazio, obriga a selecionar
+          let selSelecione = (sitVal === 'P' || sitVal === '') ? 'selected' : '';
+          
+          let selP = ''; 
+          let selF = sitVal === 'F' ? 'selected' : ''; 
+          let selINST = sitVal === 'INST' ? 'selected' : ''; 
+          let selCOM = sitVal === 'COM' ? 'selected' : ''; 
+          let selFER = sitVal === 'FÉR' ? 'selected' : ''; 
+          let selLIC = sitVal === 'LIC' ? 'selected' : ''; 
+          let selSV = sitVal === 'SV' ? 'selected' : ''; 
+          let selSSV = sitVal === 'SSV' ? 'selected' : ''; 
+          let selFORM = sitVal === 'FORM' ? 'selected' : ''; 
+          let selDM = sitVal === 'DM' ? 'selected' : ''; 
+          let selD = sitVal === 'D' ? 'selected' : '';
+          
+          divLista.innerHTML += `
+            <div class="card p-3 border-start border-4 border-primary shadow-sm">
+              <div class="mb-2"><h6 class="mb-0 text-dark fw-bold">${mil.postoGrad} ${mil.nomeGuerra}</h6></div>
+              <div class="row gx-2 align-items-center">
+                <div class="col-12" id="sitCol_${index}">
+                  <select class="form-select form-select-sm situacao-select" id="sit_${index}">
+                    <option value="" ${selSelecione} disabled>-- Selecione --</option>
+                    <option value="P" ${selP}>🟢 P (Presença)</option>
+                    <option value="F" ${selF}>🔴 F (Falta)</option>
+                    <option value="INST" ${selINST}>🎓 INST (Instrução)</option>
+                    <option value="COM" ${selCOM}>✈️ COM (Comissão)</option>
+                    <option value="FÉR" ${selFER}>🟡 FÉR (Férias)</option>
+                    <option value="LIC" ${selLIC}>🟤 LIC (Licença)</option>
+                    <option value="SV" ${selSV}>🔵 SV (Serviço)</option>
+                    <option value="SSV" ${selSSV}>🔵 SSV (Saindo Serv)</option>
+                    <option value="FORM" ${selFORM}>🟠 FORM (Formatura)</option>
+                    <option value="DM" ${selDM}>🟣 DM (Disp. Médica)</option>
+                    <option value="D" ${selD}>⚪ D (Dispensado)</option>
+                  </select>
+                </div>
+                <div class="col-12 mt-2" id="justCol_${index}" style="display: none;"><input type="text" class="form-control form-control-sm border-danger" id="just_${index}" placeholder="Justificativa (Opcional)" value="${justVal}" oninput="this.value = this.value.toUpperCase()"></div>
+                <div class="col-12 mt-2" id="retornoCol_${index}" style="display: none;"><label class="form-label mb-0" style="font-size: 0.70rem; font-weight: bold; color: #d97706;">Retorno Previsto:</label><input type="date" class="form-control form-control-sm border-warning" id="retorno_${index}" value="${dtVal}"></div>
+              </div>
+              <input type="hidden" id="pg_${index}" value="${mil.postoGrad}">
+              <input type="hidden" id="ng_${index}" value="${mil.nomeGuerra}">
+            </div>
+          `;
+        });
+        document.querySelectorAll('.situacao-select').forEach(el => {
+           el.addEventListener('change', function() {
+              let val = this.value; let idx = this.id.split('_')[1];
+              
+              // Remove a borda vermelha de erro ao selecionar uma opção válida
+              if (val !== "") this.classList.remove('border-danger', 'border-2');
+
+              if(val === '') { this.style.backgroundColor = '#ffffff'; } else if(val === 'P') { this.style.backgroundColor = '#e8f5e9'; } else if(['F', 'INST', 'COM'].includes(val)) { this.style.backgroundColor = '#ffebee'; } else { this.style.backgroundColor = '#fff3e0'; }
+              
+              let sitCol = document.getElementById('sitCol_' + idx); let justCol = document.getElementById('justCol_' + idx); let retornoCol = document.getElementById('retornoCol_' + idx);
+              sitCol.className = 'col-12'; justCol.style.display = 'none'; retornoCol.style.display = 'none';
+              if(['F', 'INST', 'COM'].includes(val)) { sitCol.className = 'col-12 col-md-5'; justCol.className = 'col-12 col-md-7 mt-2 mt-md-0'; justCol.style.display = 'block'; } else if (['FÉR', 'DM', 'D', 'LIC'].includes(val)) { sitCol.className = 'col-12 col-md-4'; justCol.className = 'col-6 col-md-4 mt-2 mt-md-0'; retornoCol.className = 'col-6 col-md-4 mt-2 mt-md-0'; justCol.style.display = 'block'; retornoCol.style.display = 'block'; }
+           });
+           el.dispatchEvent(new Event('change'));
+        });
+      }
+
+      function voltarParaLogin() { document.getElementById('tela-chamada').style.display = 'none'; document.getElementById('tela-login').style.display = 'block'; }
+
+      function enviarChamada() {
+        let responsavel = document.getElementById('responsavel').value;
+        let btn = document.getElementById('btn-enviar');
+        let qtd = document.querySelectorAll('[id^="sit_"]').length;
+        let arrayChamada = [];
+        let pendentes = 0;
+
+        // TRAVA DE SEGURANÇA: Bloqueia envio se alguém estiver no "Selecione..."
+        for(let i = 0; i < qtd; i++) {
+          let sitEl = document.getElementById('sit_'+i);
+          if (sitEl.value === "") {
+             sitEl.classList.add('border-danger', 'border-2');
+             pendentes++;
+          } else {
+             sitEl.classList.remove('border-danger', 'border-2');
+          }
+        }
+
+        if (pendentes > 0) {
+           mostrarAvisoErro(`Atenção: Falta confirmar a situação de ${pendentes} militar(es). Verifique as caixas destacadas a vermelho!`);
+           return;
+        }
+
+        let dataHoraAtual = new Date().toLocaleString('pt-BR');
+        
+        let htmlRecibo = `
+          <div style="text-align: center; margin-bottom: 20px;"><h4 style="font-weight: bold; margin-bottom: 0;">COMANDO DA AERONÁUTICA</h4><h5 style="margin-top: 0;">GRUPAMENTO DE APOIO DE BELÉM - GAP-BE</h5><h3 style="margin-top: 20px; text-decoration: underline;">COMPROVANTE DE CHAMADA DIGITAL</h3></div>
+          <div style="margin-bottom: 20px; font-size: 1.1rem;"><p><strong>Responsável:</strong> ${responsavel}</p><p><strong>Fração(ões):</strong> ${secoesSelecionadasNome}</p><p><strong>Data/Hora do Envio:</strong> ${dataHoraAtual}</p></div>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #000; padding: 8px;">P/G e Nome de Guerra</th><th style="border: 1px solid #000; padding: 8px;">Situação</th><th style="border: 1px solid #000; padding: 8px;">Justificativa / Retorno</th></tr></thead><tbody>
+        `;
+        let totalAlteracoes = 0;
+        for(let i = 0; i < qtd; i++) {
+          let sit = document.getElementById('sit_'+i).value; let just = document.getElementById('just_'+i).value.trim(); let ret = document.getElementById('retorno_'+i).value; let pg = document.getElementById('pg_'+i).value; let ng = document.getElementById('ng_'+i).value;
+          if (['FÉR', 'DM', 'D', 'LIC'].includes(sit) && ret !== "") { let pts = ret.split('-'); let textoRetorno = "Retorno Previsto: " + pts[2] + "/" + pts[1] + "/" + pts[0]; just = just ? (just + " | " + textoRetorno) : textoRetorno; }
+          arrayChamada.push({ postoGrad: pg, nomeGuerra: ng, situacao: sit, justificativa: just, retornoPrevisto: ret });
+          if (sit !== 'P') totalAlteracoes++;
+          htmlRecibo += `<tr><td style="border: 1px solid #000; padding: 8px;">${pg} ${ng}</td><td style="border: 1px solid #000; padding: 8px; font-weight: bold;">${sit}</td><td style="border: 1px solid #000; padding: 8px;">${just || '-'}</td></tr>`;
+        }
+        htmlRecibo += `</tbody></table><p><strong>Total de Alterações:</strong> ${totalAlteracoes}</p><div style="margin-top: 60px; text-align: center;"><p>_______________________________________________________</p><p style="margin-top: 5px;"><strong>${responsavel}</strong><br>Responsável pela Lançamento</p></div>`;
+        document.getElementById('recibo-print').innerHTML = htmlRecibo;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ENVIANDO...';
+
+        chamarBackend('salvarChamada', { secoesString: secoesSelecionadasNome, responsavel: responsavel, arrayChamada: arrayChamada })
+        .then(resposta => {
+          document.getElementById('tela-chamada').style.display = 'none';
+          document.getElementById('tela-sucesso').style.display = 'block';
+          btn.innerHTML = '<i class="bi bi-send-check"></i> ENVIAR CHAMADA';
+          btn.disabled = false;
+        })
+        .catch(erro => { mostrarAvisoErro("Erro ao salvar: " + erro.message); btn.disabled = false; btn.innerHTML = '<i class="bi bi-send-check"></i> ENVIAR CHAMADA'; });
+      }
+
+      function resetarSistema() { document.getElementById('tela-sucesso').style.display = 'none'; document.getElementById('responsavel').value = ''; document.getElementById('container-secoes').innerHTML = '<span class="text-muted small">Identifique-se primeiro...</span>'; document.getElementById('btn-iniciar').disabled = true; document.getElementById('recibo-print').innerHTML = ''; document.getElementById('tela-login').style.display = 'block'; }
+    </script>
+  </body>
 </html>
